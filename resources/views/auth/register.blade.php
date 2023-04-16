@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+    <form method="POST" action="{{ route('register') }}" id="registerForm"> 
         @csrf
 
         <!-- Name -->
@@ -39,6 +39,9 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
+        {{-- Recapcha --}}
+        <input type="hidden" class="g-recaptcha" name="recaptcha_token" id="recaptcha_token">
+
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
                 {{ __('Already registered?') }}
@@ -49,4 +52,19 @@
             </x-primary-button>
         </div>
     </form>
+
+    @push('scripts') 
+    <script>
+        grecaptcha.ready(function () {
+            document.getElementById('registerForm').addEventListener("submit", function (event) {
+                event.preventDefault();
+                grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', { action: 'register' })
+                    .then(function (token) {
+                        document.getElementById("recaptcha_token").value = token;
+                        document.getElementById('registerForm').submit();
+                    });
+            });
+        });
+    </script>
+@endpush
 </x-guest-layout>
